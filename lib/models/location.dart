@@ -15,6 +15,12 @@ class Location {
   final List<LocationFact> facts;
   Location({this.id, this.name, this.url, this.facts});
 
+  Location.blank()
+      : id = 0,
+        name = '',
+        url = '',
+        facts = [];
+
   factory Location.fromJson(Map<String, dynamic> json) =>
       _$LocationFromJson(json);
 
@@ -43,5 +49,9 @@ class Location {
     }
     final Map<String, dynamic> itemMap = json.decode(resp.body);
     return Location.fromJson(itemMap);
+  }
+
+  static Future<Location> fetchAny() async {
+    return Location.fetchByID(1);
   }
 }

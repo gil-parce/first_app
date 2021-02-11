@@ -1,12 +1,21 @@
-import 'package:first_app/location_detail.dart';
 import 'package:flutter/material.dart';
 import 'models/location.dart';
+import 'location_detail.dart';
 import 'styles.dart';
 
-class LocationList extends StatelessWidget {
-  final List<Location> locations;
+class LocationList extends StatefulWidget {
+  @override
+  createState() => _LocationListState();
+}
 
-  LocationList(this.locations);
+class _LocationListState extends State<LocationList> {
+  List<Location> locations = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,37 +28,44 @@ class LocationList extends StatelessWidget {
     );
   }
 
+  loadData() async {
+    final locations = await Location.fetchAll();
+    if (this.mounted) {
+      setState(() {
+        this.locations = locations;
+      });
+    }
+  }
+
   Widget _listViewItemBuilder(BuildContext context, int index) {
-    var location = this.locations[index];
+    final location = this.locations[index];
     return ListTile(
         contentPadding: EdgeInsets.all(10.0),
-        leading: _itemThumbnail(this.locations[index]),
+        leading: _itemThumbnail(location),
         title: _itemTitle(location),
-        onTap: () => _navigateToLocationDetail(context, index));
+        onTap: () => _navigateToLocationDetail(context, location.id)
+    );
   }
 
   void _navigateToLocationDetail(BuildContext context, int locationID) {
     Navigator.push(context,
-        MaterialPageRoute(
-          builder: (context) =>
-              LocationDetail(locationID),
-        ));
+        MaterialPageRoute(builder: (context) => LocationDetail(locationID)));
   }
 
   Widget _itemThumbnail(Location location) {
+    Image image;
+    try {
+      image = Image.network(location.url, fit: BoxFit.fitWidth);
+    } catch (e) {
+      print("could not load image ${location.url}");
+    }
     return Container(
       constraints: BoxConstraints.tightFor(width: 100.0),
-      child: Image.network(
-          location.url,
-          fit: BoxFit.fitWidth
-      ),
+      child: image,
     );
   }
 
   Widget _itemTitle(Location location) {
-    return Text(
-        '${location.name}',
-        style: Styles.textDefault
-    );
+    return Text('${location.name}', style: Styles.textDefault);
   }
 }
